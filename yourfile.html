@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MT Menu — UI Preview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      --bg: #040405;
+      --panel: #09090a;
+      --card: #0d0d0e;
+      --card-hover: #151516;
+      --line: #1f1f20;
+      --text: #f5f5f6;
+      --muted: #929296;
+      --accent: #f5f5f5;
+      --scale: 1;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: auto;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 15% 8%, #242426 0, transparent 36%),
+        radial-gradient(ellipse at 85% 90%, #18181a 0, transparent 40%),
+        #030304;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .app {
+      width: min(calc(780px * var(--scale)), calc(100vw - 28px));
+      height: min(calc(470px * var(--scale)), calc(100vh - 28px));
+      min-height: min(calc(360px * var(--scale)), calc(100vh - 28px));
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+      border: 1px solid #29292b;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #0d0d0f, #070708 62%, #0c0c0d);
+      box-shadow: 0 24px 90px #000b, 0 0 44px #ffffff08;
+    }
+    .app::before, .app::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .app::before {
+      background: radial-gradient(ellipse at 90% 0%, #ffffff0c, transparent 48%);
+    }
+    .app::after {
+      opacity: .08;
+      background-image: repeating-linear-gradient(0deg, transparent 0 3px, #fff 4px);
+    }
+    .app.vignette { box-shadow: inset 0 0 90px #000, 0 24px 90px #000b; }
+    .sidebar {
+      min-height: 0;
+      padding: 12px 7px;
+      border-right: 1px solid #ffffff0a;
+      background: #070708c9;
+    }
+    .brand {
+      height: 43px;
+      margin: 0 4px 9px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+    .brand::after {
+      content: "";
+      width: 5px;
+      height: 5px;
+      position: absolute;
+      top: 5px;
+      right: 1px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 9px #fff;
+    }
+    .nav { display: grid; gap: 6px; }
+    .nav button {
+      min-height: 55px;
+      display: grid;
+      place-items: center;
+      gap: 0;
+      padding: 5px 2px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .18s, color .18s, border-color .18s;
+    }
+    .nav button:hover { background: #ffffff08; color: var(--text); }
+    .nav button.active {
+      color: var(--text);
+      border-color: #ffffff17;
+      background: linear-gradient(130deg, #ffffff14, #ffffff04);
+      box-shadow: inset 2px 0 #eee;
+    }
+    .nav-icon { font-size: 18px; line-height: 23px; }
+    .nav-label { font-size: 9px; font-weight: 650; letter-spacing: .1px; }
+    main {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 62px minmax(0, 1fr);
+      background: #09090ab8;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 17px 9px 22px;
+      border-bottom: 1px solid #ffffff08;
+    }
+    .heading { min-width: 80px; }
+    .eyebrow {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: 15px; line-height: 18px; letter-spacing: .2px; }
+    .top-actions { display: flex; align-items: center; gap: 9px; }
+    .search {
+      width: min(230px, 31vw);
+      height: 32px;
+      padding: 0 10px 0 31px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      outline: 0;
+      color: var(--text);
+      background: #0d0d0e;
+      font-size: 11px;
+      transition: border-color .15s;
+    }
+    .search:focus { border-color: #8c8c8f; }
+    .search-wrap { position: relative; }
+    .search-wrap::before {
+      content: "⌕";
+      position: absolute;
+      left: 11px;
+      top: 5px;
+      color: var(--muted);
+      font-size: 17px;
+      pointer-events: none;
+    }
+    .version {
+      padding: 6px 9px;
+      border: 1px solid #ffffff1c;
+      border-radius: 6px;
+      background: #ffffff08;
+      color: #ddd;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .close {
+      width: 27px;
+      height: 27px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .close:hover { color: white; background: #ffffff12; }
+    .content {
+      min-height: 0;
+      overflow: auto;
+      padding: 15px 22px 22px;
+      scrollbar-color: #414144 transparent;
+      scrollbar-width: thin;
+    }
+    .content::-webkit-scrollbar { width: 5px; }
+    .content::-webkit-scrollbar-thumb { border-radius: 8px; background: #414144; }
+    .section { margin: 0 0 18px; }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 8px;
+      color: #bdbdc0;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+    .section-title::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+    .options { display: grid; gap: 3px; }
+    .option {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 7px 10px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: #ffffff00;
+      transition: background .15s, border-color .15s;
+    }
+    .option:hover { background: #ffffff06; border-color: #ffffff09; }
+    .option-copy { min-width: 0; }
+    .option-name { display: block; font-size: 12px; font-weight: 600; }
+    .option-description { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 14px; }
+    .switch {
+      width: 40px;
+      height: 21px;
+      flex: 0 0 auto;
+      padding: 2px;
+      border: 1px solid #2c2c2e;
+      border-radius: 12px;
+      background: #1a1a1c;
+      cursor: pointer;
+      transition: background .18s, border-color .18s;
+    }
+    .switch::before {
+      content: "";
+      display: block;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #f8f8f8;
+      box-shadow: 0 1px 4px #0009;
+      transition: transform .18s;
+    }
+    .switch[aria-checked="true"] { border-color: #aaa; background: linear-gradient(100deg, #f2f2f2, #999); }
+    .switch[aria-checked="true"]::before { transform: translateX(18px); }
+    .range-control { width: min(245px, 47%); display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+    input[type="range"] { width: 100%; accent-color: #eee; cursor: pointer; }
+    .value {
+      min-width: 43px;
+      padding: 4px 6px;
+      border: 1px solid #ffffff17;
+      border-radius: 5px;
+      color: #eee;
+      background: #141415;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .choices { display: flex; flex-wrap: wrap; gap: 6px; }
+    .choice, .slot {
+      min-height: 31px;
+      padding: 0 12px;
+      border: 1px solid #29292b;
+      border-radius: 6px;
+      background: #101011;
+      color: #b4b4b7;
+      font-size: 10px;
+      cursor: pointer;
+      transition: .15s;
+    }
+    .choice:hover, .slot:hover { border-color: #777; color: white; }
+    .choice.selected, .slot.selected {
+      border-color: #c7c7c9;
+      background: linear-gradient(120deg, #eeeeee, #bdbdc0);
+      color: #111;
+      font-weight: 700;
+      box-shadow: 0 0 13px #fff1;
+    }
+    .key-row { min-height: 44px; }
+    .key-button {
+      min-width: 72px;
+      padding: 6px 10px;
+      border: 1px solid #303033;
+      border-radius: 6px;
+      background: #111112;
+      color: #eee;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .key-button.waiting { border-color: #aaa; box-shadow: 0 0 12px #fff2; }
+    .empty { padding: 32px 12px; color: var(--muted); text-align: center; font-size: 12px; }
+    .open-button {
+      display: none;
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      padding: 10px 14px;
+      border: 1px solid #444;
+      border-radius: 9px;
+      background: #111;
+      cursor: pointer;
+    }
+    body.closed .app { display: none; }
+    body.closed .open-button { display: block; }
+    body.no-motion *, body.no-motion *::before, body.no-motion *::after { transition-duration: 0s !important; }
+    @media (max-width: 560px) {
+      body { place-items: start center; padding: 10px 0; }
+      .app { width: calc(100vw - 20px); height: calc(100vh - 20px); min-height: 0; grid-template-columns: 64px minmax(0, 1fr); }
+      .sidebar { padding-inline: 5px; }
+      .nav button { min-height: 50px; }
+      .nav-label { font-size: 8px; }
+      .topbar { padding-inline: 13px; }
+      .content { padding-inline: 13px; }
+      .version { display: none; }
+      .search { width: min(170px, 38vw); }
+      .option { gap: 8px; padding-inline: 6px; }
+      .range-control { width: 45%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="brand">MT</div>
+      <nav class="nav" id="navigation" aria-label="Menu sections"></nav>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="heading">
+          <div class="eyebrow">Military Tycoon · UI Preview</div>
+          <h1 id="page-title">Visuals</h1>
+        </div>
+        <div class="top-actions">
+          <label class="search-wrap">
+            <input class="search" id="search" type="search" placeholder="Search options..." aria-label="Search options">
+          </label>
+          <span class="version">✦ v1.0</span>
+          <button class="close" id="close" type="button" aria-label="Hide preview">×</button>
+        </div>
+      </header>
+      <div class="content" id="content"></div>
+    </main>
+  </div>
+  <button class="open-button" id="open" type="button">Open UI preview</button>
+
+  <!--
+    Vitality config block.
+    This JSON is the single source of truth that the Roblox Lua script reads.
+    The browser preview below parses this same JSON, so the HTML page and the
+    in-game menu can never drift apart.
+  -->
+  <script id="vitality-config" type="application/json">
+    {
+      "menuTitle": "Military Tycoon",
+      "version": "v1.0",
+      "tabs": [
+        {
+          "id": "visuals", "label": "Visuals", "icon": "\u25c9",
+          "sections": [
+            { "title": "Style", "controls": [
+              { "type": "choice", "label": "ESP Style", "options": ["Box", "Outline", "Corner", "None"], "value": "Box" }
+            ]},
+            { "title": "Options", "controls": [
+              { "type": "toggle", "label": "Enable ESP", "description": "Display visual information for other players." },
+              { "type": "toggle", "label": "Show Names", "description": "Display player names above their characters." },
+              { "type": "toggle", "label": "Tracers", "description": "Draw lines from the screen to visible players." },
+              { "type": "toggle", "label": "Health Bar", "description": "Show each player's remaining health." },
+              { "type": "slider", "label": "Max Distance", "description": "Set the maximum distance for player visuals.", "min": 100, "max": 2000, "value": 1000 },
+              { "type": "toggle", "label": "Unlimited Distance", "description": "Remove the maximum ESP distance limit." }
+            ]}
+          ]
+        },
+        {
+          "id": "aim", "label": "Aim", "icon": "\u25ce",
+          "sections": [
+            { "title": "Target selection", "controls": [
+              { "type": "choice", "label": "Target", "options": ["Head", "Legs", "Chest"], "value": "Head" }
+            ]},
+            { "title": "Activation", "controls": [
+              { "type": "choice", "label": "Activation mode", "options": ["Hold", "Toggle", "Always"], "value": "Hold" }
+            ]},
+            { "title": "Options", "controls": [
+              { "type": "toggle", "label": "Enable Aimbot", "description": "Enable target tracking and aim assistance." },
+              { "type": "slider", "label": "Strength (1 = assist, 100 = snap)", "description": "Adjust how strongly aim follows the target.", "min": 1, "max": 100, "value": 50 },
+              { "type": "slider", "label": "FOV", "description": "Set the radius used to find targets.", "min": 10, "max": 500, "value": 120 }
+            ]}
+          ]
+        },
+        {
+          "id": "misc", "label": "Misc", "icon": "\u2727",
+          "sections": [
+            { "title": "Display", "controls": [
+              { "type": "toggle", "label": "Notifications", "value": true },
+              { "type": "toggle", "label": "FPS Counter", "description": "Show a live client frame-rate readout." },
+              { "type": "toggle", "label": "Clock", "description": "Show your local time on screen." },
+              { "type": "toggle", "label": "Center Crosshair", "description": "Show a small, rounded screen-center crosshair." },
+              { "type": "toggle", "label": "Target Indicator", "description": "Display the current aimbot target while the menu is hidden." },
+              { "type": "toggle", "label": "Coordinates" }
+            ]},
+            { "title": "Camera & performance", "controls": [
+              { "type": "toggle", "label": "Optimize Game", "description": "Hide world and sky textures and disable shadows; toggle off to restore them." },
+              { "type": "toggle", "label": "Freecam" },
+              { "type": "toggle", "label": "Godmode", "description": "Prevent death by restoring your health whenever you would die." },
+              { "type": "slider", "label": "Freecam Speed", "min": 8, "max": 160, "value": 48 }
+            ]}
+          ]
+        },
+        {
+          "id": "settings", "label": "Settings", "icon": "\u2699",
+          "sections": [
+            { "title": "Interface", "controls": [
+              { "type": "slider", "label": "UI Scale (%)", "description": "Resize the interface to fit your screen.", "min": 60, "max": 130, "value": 100, "suffix": "%" },
+              { "type": "toggle", "label": "Animations", "description": "Enable animated menu accents.", "value": true },
+              { "type": "toggle", "label": "Menu Blur / Vignette", "description": "Add a soft vignette around the menu." }
+            ]},
+            { "title": "Movement", "controls": [
+              { "type": "slider", "label": "Movement Speed", "description": "Set character movement speed.", "min": 16, "max": 100, "value": 16 },
+              { "type": "toggle", "label": "Noclip", "description": "Disable character collisions while enabled." }
+            ]}
+          ]
+        },
+        {
+          "id": "configs", "label": "Configs", "icon": "\u25a4",
+          "sections": [
+            { "title": "Slots", "controls": [
+              { "type": "choice", "label": "Configuration slot", "options": ["Slot 1", "Slot 2", "Slot 3", "Slot 4"], "value": "Slot 1" }
+            ]}
+          ]
+        },
+        {
+          "id": "keys", "label": "Keys", "icon": "\u2318",
+          "sections": [
+            { "title": "Rebind controls", "controls": [
+              { "type": "key", "label": "Toggle menu", "value": "Right Shift" },
+              { "type": "key", "label": "Enable / disable aimbot", "value": "F6" },
+              { "type": "key", "label": "Toggle aim activation", "value": "E" },
+              { "type": "key", "label": "Hold aim activation", "value": "Mouse 2" },
+              { "type": "key", "label": "Toggle noclip", "value": "N" },
+              { "type": "key", "label": "Toggle godmode", "value": "G" },
+              { "type": "key", "label": "Toggle freecam", "value": "F8" }
+            ]}
+          ]
+        }
+      ]
+    }
+  </script>
+
+  <script>
+    // The preview now renders from the shared #vitality-config JSON block,
+    // so the page and the in-game menu stay in sync from a single source.
+    const tabs = (() => {
+      const node = document.getElementById("vitality-config");
+      try {
+        return JSON.parse(node.textContent).tabs;
+      } catch (error) {
+        console.error("Vitality config failed to parse:", error);
+        return [];
+      }
+    })();
+
+    const navigation = document.getElementById("navigation");
+    const content = document.getElementById("content");
+    const title = document.getElementById("page-title");
+    const search = document.getElementById("search");
+    const state = Object.create(null);
+    let activeTab = tabs[0];
+    let waitingForKey = null;
+
+    function getValue(control) {
+      if (control.type === "toggle") return state[control.label] ?? Boolean(control.value);
+      if (control.type === "slider") return state[control.label] ?? control.value;
+      if (control.type === "choice") return state[control.label] ?? control.value;
+      if (control.type === "key") return state[control.label] ?? control.value;
+      return undefined;
+    }
+
+    function makeToggle(control) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "switch";
+      button.setAttribute("role", "switch");
+      button.setAttribute("aria-label", control.label);
+      button.setAttribute("aria-checked", String(getValue(control)));
+      button.addEventListener("click", () => {
+        state[control.label] = !getValue(control);
+        button.setAttribute("aria-checked", String(state[control.label]));
+        if (control.label === "Animations") {
+          document.body.classList.toggle("no-motion", !state[control.label]);
+        } else if (control.label === "Menu Blur / Vignette") {
+          document.getElementById("app").classList.toggle("vignette", state[control.label]);
+        }
+      });
+      return button;
+    }
+
+    function makeSlider(control) {
+      const wrap = document.createElement("div");
+      wrap.className = "range-control";
+      const input = document.createElement("input");
+      input.type = "range";
+      input.min = control.min;
+      input.max = control.max;
+      input.value = getValue(control);
+      input.setAttribute("aria-label", control.label);
+      const output = document.createElement("output");
+      output.className = "value";
+      const update = () => {
+        state[control.label] = Number(input.value);
+        output.value = `${input.value}${control.suffix || ""}`;
+        output.textContent = output.value;
+        if (control.label === "UI Scale (%)") {
+          document.documentElement.style.setProperty("--scale", String(Number(input.value) / 100));
+        }
+      };
+      input.addEventListener("input", update);
+      update();
+      wrap.append(input, output);
+      return wrap;
+    }
+
+    function makeChoices(control) {
+      const group = document.createElement("div");
+      group.className = "choices";
+      group.setAttribute("role", "group");
+      group.setAttribute("aria-label", control.label);
+      for (const option of control.options) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "choice";
+        button.textContent = option;
+        button.setAttribute("aria-pressed", String(getValue(control) === option));
+        if (getValue(control) === option) button.classList.add("selected");
+        button.addEventListener("click", () => {
+          state[control.label] = option;
+          group.querySelectorAll(".choice").forEach((item) => {
+            const selected = item === button;
+            item.classList.toggle("selected", selected);
+            item.setAttribute("aria-pressed", String(selected));
+          });
+        });
+        group.append(button);
+      }
+      return group;
+    }
+
+    function makeKey(control) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "key-button";
+      button.textContent = getValue(control);
+      button.setAttribute("aria-label", `${control.label}: ${button.textContent}. Click to rebind.`);
+      button.dataset.controlLabel = control.label;
+      button.addEventListener("click", () => {
+        if (waitingForKey) waitingForKey.classList.remove("waiting");
+        waitingForKey = button;
+        button.classList.add("waiting");
+        button.textContent = "Press key";
+      });
+      return button;
+    }
+
+    function makeOption(control) {
+      if (control.type === "note") {
+        const note = document.createElement("p");
+        note.className = "option-description";
+        note.textContent = control.text;
+        note.style.padding = "0 10px";
+        return note;
+      }
+      const row = document.createElement("div");
+      row.className = `option${control.type === "key" ? " key-row" : ""}`;
+      const copy = document.createElement("div");
+      copy.className = "option-copy";
+      const label = document.createElement("span");
+      label.className = "option-name";
+      label.textContent = control.label;
+      copy.append(label);
+      if (control.description) {
+        const description = document.createElement("span");
+        description.className = "option-description";
+        description.textContent = control.description;
+        copy.append(description);
+      }
+      let input;
+      if (control.type === "toggle") input = makeToggle(control);
+      if (control.type === "slider") input = makeSlider(control);
+      if (control.type === "choice") input = makeChoices(control);
+      if (control.type === "key") input = makeKey(control);
+      row.append(copy, input);
+      row.dataset.search = `${control.label} ${control.description || ""}`.toLowerCase();
+      return row;
+    }
+
+    function render() {
+      navigation.replaceChildren();
+      for (const tab of tabs) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.classList.toggle("active", tab === activeTab);
+        button.setAttribute("aria-current", tab === activeTab ? "page" : "false");
+        button.innerHTML = `<span class="nav-icon" aria-hidden="true">${tab.icon}</span><span class="nav-label"></span>`;
+        button.querySelector(".nav-label").textContent = tab.label;
+        button.addEventListener("click", () => {
+          activeTab = tab;
+          search.value = "";
+          render();
+        });
+        navigation.append(button);
+      }
+      title.textContent = activeTab.label;
+      content.replaceChildren();
+      const query = search.value.trim().toLowerCase();
+      let visibleCount = 0;
+      for (const section of activeTab.sections) {
+        const sectionElement = document.createElement("section");
+        sectionElement.className = "section";
+        const heading = document.createElement("h2");
+        heading.className = "section-title";
+        heading.textContent = section.title;
+        const options = document.createElement("div");
+        options.className = "options";
+        for (const control of section.controls) {
+          const row = makeOption(control);
+          const matches = !query || (row.dataset.search || control.text || "").toLowerCase().includes(query);
+          if (matches) {
+            options.append(row);
+            visibleCount++;
+          }
+        }
+        if (options.childElementCount) {
+          sectionElement.append(heading, options);
+          content.append(sectionElement);
+        }
+      }
+      if (visibleCount === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No matching options.";
+        content.append(empty);
+      }
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (!waitingForKey) return;
+      if (["Shift", "Control", "Alt", "Meta"].includes(event.key)) return;
+      event.preventDefault();
+      const keyName = event.key.length === 1 ? event.key.toUpperCase() : event.key;
+      state[waitingForKey.dataset.controlLabel] = keyName;
+      waitingForKey.textContent = keyName;
+      waitingForKey.setAttribute("aria-label", `${waitingForKey.dataset.controlLabel}: ${keyName}. Click to rebind.`);
+      waitingForKey.classList.remove("waiting");
+      waitingForKey = null;
+    });
+    search.addEventListener("input", render);
+    document.getElementById("close").addEventListener("click", () => document.body.classList.add("closed"));
+    document.getElementById("open").addEventListener("click", () => document.body.classList.remove("closed"));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !waitingForKey) document.body.classList.toggle("closed");
+    });
+
+    render();
+  </script>
+</body>
+</html>
