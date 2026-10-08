@@ -62,7 +62,13 @@ local function fetchHtml()
             injected = getgenv().VitalityHTML
         end
     end)
-    if ok and type(injected) == "string" and #injected > 0 then
+    local function hasConfigHtml(value)
+        if type(value) ~= "string" or #value == 0 then return false end
+        local isHtml = value:match("^%s*<![Dd][Oo][Cc][Tt][Yy][Pp][Ee]")
+            or value:match("^%s*<html")
+        return isHtml ~= nil and value:find('id="vitality-config"', 1, true) ~= nil
+    end
+    if ok and hasConfigHtml(injected) then
         htmlConfigSource = "loader"
         return injected
     end
@@ -72,7 +78,7 @@ local function fetchHtml()
     ok = pcall(function()
         fetched = game:HttpGet(CONFIG_URL)
     end)
-    if ok and type(fetched) == "string" and #fetched > 0 then
+    if ok and hasConfigHtml(fetched) then
         htmlConfigSource = "HttpGet"
         return fetched
     end
@@ -2761,7 +2767,17 @@ pcall(function()
     end
 end)
 
-tabs["Main"].Select()
+if htmlOk and htmlConfig and htmlConfig.tabs and htmlConfig.tabs[1] then
+    local firstTab = htmlConfig.tabs[1]
+    local firstTabName = "HTML_" .. tostring(firstTab.id or firstTab.label or "HTML")
+    if tabs[firstTabName] then
+        tabs[firstTabName].Select()
+    else
+        tabs["Main"].Select()
+    end
+else
+    tabs["Main"].Select()
+end
 notify("Menu ready", "Galaxy theme active. Open Keybinds to customize controls.")
 
 -- Force the "all off" state onto anything built during load
