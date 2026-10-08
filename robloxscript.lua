@@ -38,7 +38,7 @@ local notificationsEnabled = true
 -- ===================================================================
 -- The menu is described by an HTML file on GitHub. The loader line:
 --
---   getgenv().VitalityHTML = game:HttpGet(".../VitalityHTML.html")
+--   getgenv().VitalityHTML = game:HttpGet(".../yourfile.html")
 --   loadstring(game:HttpGet(".../robloxscript.lua"))()
 --
 -- stashes the fetched HTML in getgenv().VitalityHTML *before* this script
@@ -48,7 +48,7 @@ local notificationsEnabled = true
 -- mirrors the browser preview's own data (script.html), keeping the two in
 -- sync from a single source of truth.
 
-local CONFIG_URL = "https://raw.githubusercontent.com/rpldv048-ai/Vitality-/refs/heads/main/VitalityHTML.html"
+local CONFIG_URL = "https://raw.githubusercontent.com/rpldv048-ai/Vitality-/refs/heads/main/yourfile.html"
 local HttpService = game:GetService("HttpService")
 
 local htmlConfig = nil        -- decoded config table, or nil
@@ -406,10 +406,12 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 -- Deep monochrome galaxy backdrop
-local baseGrad = Instance.new("UIGradient")
-baseGrad.Rotation = 135
-baseGrad.Color = ColorSequence.new(Color3.fromRGB(4, 4, 4), Color3.fromRGB(6, 6, 6))
-baseGrad.Parent = window
+do
+    local baseGrad = Instance.new("UIGradient")
+    baseGrad.Rotation = 135
+    baseGrad.Color = ColorSequence.new(Color3.fromRGB(4, 4, 4), Color3.fromRGB(6, 6, 6))
+    baseGrad.Parent = window
+end
 
 local galaxyLayer = Instance.new("Frame")
 galaxyLayer.Name = "Galaxy"
@@ -421,24 +423,26 @@ galaxyLayer.ZIndex = 1
 galaxyLayer.Parent = window
 liveCorner(galaxyLayer, 16)
 
-local nebula = Instance.new("Frame")
-nebula.Name = "Nebula"
-nebula.Size = UDim2.new(1, 0, 1, 0)
-nebula.BackgroundColor3 = Color3.fromRGB(175, 175, 180)
-nebula.BackgroundTransparency = 0.98
-nebula.BorderSizePixel = 0
-nebula.ZIndex = 1
-nebula.Parent = galaxyLayer
-liveCorner(nebula, 16)
-local nebulaGradient = Instance.new("UIGradient")
-nebulaGradient.Rotation = 32
-nebulaGradient.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 0.48),
-    NumberSequenceKeypoint.new(0.32, 0.96),
-    NumberSequenceKeypoint.new(0.68, 0.93),
-    NumberSequenceKeypoint.new(1, 0.35),
-})
-nebulaGradient.Parent = nebula
+do
+    local nebula = Instance.new("Frame")
+    nebula.Name = "Nebula"
+    nebula.Size = UDim2.new(1, 0, 1, 0)
+    nebula.BackgroundColor3 = Color3.fromRGB(175, 175, 180)
+    nebula.BackgroundTransparency = 0.98
+    nebula.BorderSizePixel = 0
+    nebula.ZIndex = 1
+    nebula.Parent = galaxyLayer
+    liveCorner(nebula, 16)
+    local nebulaGradient = Instance.new("UIGradient")
+    nebulaGradient.Rotation = 32
+    nebulaGradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.48),
+        NumberSequenceKeypoint.new(0.32, 0.96),
+        NumberSequenceKeypoint.new(0.68, 0.93),
+        NumberSequenceKeypoint.new(1, 0.35),
+    })
+    nebulaGradient.Parent = nebula
+end
 
 local galaxyRandom = Random.new()
 local galaxyStars = {}
@@ -548,38 +552,40 @@ local function updateGalaxy(dt)
 end
 
 -- Accent glow in the corner
-local glow = Instance.new("Frame")
-glow.Size = UDim2.new(1, 0, 1, 0)
-glow.BackgroundColor3 = T.Accent
-glow.BorderSizePixel = 0
-glow.Parent = window
-liveCorner(glow, 16)
-local gg = Instance.new("UIGradient")
-gg.Rotation = 45
-gg.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 0.93),
-    NumberSequenceKeypoint.new(0.45, 1),
-    NumberSequenceKeypoint.new(1, 0.95),
-})
-gg.Parent = glow
-accentLive(gg)
+do
+    local glow = Instance.new("Frame")
+    glow.Size = UDim2.new(1, 0, 1, 0)
+    glow.BackgroundColor3 = T.Accent
+    glow.BorderSizePixel = 0
+    glow.Parent = window
+    liveCorner(glow, 16)
+    local gg = Instance.new("UIGradient")
+    gg.Rotation = 45
+    gg.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.93),
+        NumberSequenceKeypoint.new(0.45, 1),
+        NumberSequenceKeypoint.new(1, 0.95),
+    })
+    gg.Parent = glow
+    accentLive(gg)
 
--- Second, opposing bloom for depth
-local glow2 = Instance.new("Frame")
-glow2.Size = UDim2.new(1, 0, 1, 0)
-glow2.BackgroundColor3 = T.Accent3
-glow2.BorderSizePixel = 0
-glow2.Parent = window
-liveCorner(glow2, 16)
-local gg2 = Instance.new("UIGradient")
-gg2.Rotation = 225
-gg2.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 0.95),
-    NumberSequenceKeypoint.new(0.5, 1),
-    NumberSequenceKeypoint.new(1, 0.9),
-})
-gg2.Parent = glow2
-accentLive(gg2, 0.5)
+    -- Second, opposing bloom for depth
+    local glow2 = Instance.new("Frame")
+    glow2.Size = UDim2.new(1, 0, 1, 0)
+    glow2.BackgroundColor3 = T.Accent3
+    glow2.BorderSizePixel = 0
+    glow2.Parent = window
+    liveCorner(glow2, 16)
+    local gg2 = Instance.new("UIGradient")
+    gg2.Rotation = 225
+    gg2.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.95),
+        NumberSequenceKeypoint.new(0.5, 1),
+        NumberSequenceKeypoint.new(1, 0.9),
+    })
+    gg2.Parent = glow2
+    accentLive(gg2, 0.5)
+end
 
 -- Top hairline: the animated accent rule that makes it feel "live"
 -- Vignette / scanline wash across the whole menu
@@ -611,42 +617,44 @@ sidebar.BackgroundTransparency = 0.06
 sidebar.Parent = window
 sidebar.ZIndex = 2
 
-local logoBar = Instance.new("Frame")
-logoBar.Size = UDim2.new(0, 4, 0, 24)
-logoBar.Position = UDim2.new(0, 22, 0, 18)
-logoBar.BackgroundColor3 = T.Accent
-logoBar.BorderSizePixel = 0
-logoBar.Parent = sidebar
-corner(logoBar, 2)
-local logoGrad = gradient(logoBar, 90, T.Accent, T.Accent3)
-accentLive(logoGrad, 1.1)
+do
+    local logoBar = Instance.new("Frame")
+    logoBar.Size = UDim2.new(0, 4, 0, 24)
+    logoBar.Position = UDim2.new(0, 22, 0, 18)
+    logoBar.BackgroundColor3 = T.Accent
+    logoBar.BorderSizePixel = 0
+    logoBar.Parent = sidebar
+    corner(logoBar, 2)
+    local logoGrad = gradient(logoBar, 90, T.Accent, T.Accent3)
+    accentLive(logoGrad, 1.1)
 
-local logoText = label(sidebar, "MILITARY", 17, Enum.Font.GothamBold, T.Text)
-logoText.Position = UDim2.new(0, 38, 0, 18)
-logoText.Size = UDim2.new(1, -48, 0, 24)
-logoText.TextTransparency = 0.05
+    local logoText = label(sidebar, "MILITARY", 17, Enum.Font.GothamBold, T.Text)
+    logoText.Position = UDim2.new(0, 38, 0, 18)
+    logoText.Size = UDim2.new(1, -48, 0, 24)
+    logoText.TextTransparency = 0.05
 
--- Blinking "online" pip next to the logo
-local statusDot = Instance.new("Frame")
-statusDot.Size = UDim2.new(0, 6, 0, 6)
-statusDot.Position = UDim2.new(0, 12, 0, 27)
-statusDot.BackgroundColor3 = T.Accent
-statusDot.BorderSizePixel = 0
-statusDot.Parent = sidebar
-corner(statusDot, 3)
-accentDot(statusDot, 2.2)
+    -- Blinking "online" pip next to the logo
+    local statusDot = Instance.new("Frame")
+    statusDot.Size = UDim2.new(0, 6, 0, 6)
+    statusDot.Position = UDim2.new(0, 12, 0, 27)
+    statusDot.BackgroundColor3 = T.Accent
+    statusDot.BorderSizePixel = 0
+    statusDot.Parent = sidebar
+    corner(statusDot, 3)
+    accentDot(statusDot, 2.2)
 
-local logoDiv = Instance.new("Frame")
-logoDiv.Size = UDim2.new(1, -32, 0, 1)
-logoDiv.Position = UDim2.new(0, 16, 0, 56)
-logoDiv.BackgroundColor3 = T.Line
-logoDiv.BorderSizePixel = 0
-logoDiv.Parent = sidebar
-corner(logoDiv, 1)
-logoBar.Visible = false
-logoText.Visible = false
-statusDot.Visible = false
-logoDiv.Visible = false
+    local logoDiv = Instance.new("Frame")
+    logoDiv.Size = UDim2.new(1, -32, 0, 1)
+    logoDiv.Position = UDim2.new(0, 16, 0, 56)
+    logoDiv.BackgroundColor3 = T.Line
+    logoDiv.BorderSizePixel = 0
+    logoDiv.Parent = sidebar
+    corner(logoDiv, 1)
+    logoBar.Visible = false
+    logoText.Visible = false
+    statusDot.Visible = false
+    logoDiv.Visible = false
+end
 
 local nav = Instance.new("ScrollingFrame")
 nav.Size = UDim2.new(1, -8, 1, -70)
@@ -2666,7 +2674,7 @@ bottom.BackgroundTransparency = 1
 bottom.Parent = sidebar
 
 -- Bottom-left X closes the menu; right-click keeps the full teardown available.
-local terminateBtn, terminateIcon, terminateText = sideButton(bottom, "✖", "Terminate")
+local terminateBtn = sideButton(bottom, "✖", "Terminate")
 terminateBtn.Name = "Terminate"
 terminateBtn.Size = UDim2.new(1, 0, 0, 46)
 terminateBtn.Position = UDim2.new(0, 0, 1, -46)
@@ -2675,29 +2683,18 @@ terminateBtn.SideIcon.Size = UDim2.new(1, 0, 1, 0)
 terminateBtn.SideIcon.Position = UDim2.new(0, 0, 0, 0)
 terminateBtn.SideIcon.TextSize = 18
 terminateBtn.BackgroundColor3 = T.Danger
-terminateIcon.TextColor3 = T.Sub
-terminateText.TextColor3 = T.Sub
-terminateText.Font = Enum.Font.GothamBold
+terminateBtn.SideIcon.TextColor3 = T.Sub
+terminateBtn.SideLabel.TextColor3 = T.Sub
+terminateBtn.SideLabel.Font = Enum.Font.GothamBold
 
 terminateBtn.MouseEnter:Connect(function()
     tween(terminateBtn, 0.2, {BackgroundTransparency = 0.88})
-    tween(terminateIcon, 0.2, {TextColor3 = T.Text})
+    tween(terminateBtn.SideIcon, 0.2, {TextColor3 = T.Text})
 end)
 terminateBtn.MouseLeave:Connect(function()
     tween(terminateBtn, 0.2, {BackgroundTransparency = 1})
-    tween(terminateIcon, 0.2, {TextColor3 = T.Sub})
+    tween(terminateBtn.SideIcon, 0.2, {TextColor3 = T.Sub})
 end)
-
--- Highlight the player the aimbot is currently locked onto, so the
--- FOV behaviour is visible and not just felt.
-local aimHighlight = Instance.new("Highlight")
-aimHighlight.Name = "MT_AimTarget"
-aimHighlight.FillColor = T.Danger
-aimHighlight.OutlineColor = T.Danger
-aimHighlight.FillTransparency = 0.75
-aimHighlight.OutlineTransparency = 0.15
-aimHighlight.DepthMode = Enum.HighlightDepthMode.Occluded
-aimHighlight.Parent = espGui
 
 -- Full teardown: kills every loop and both GUIs
 local function terminate()
@@ -2876,6 +2873,17 @@ UserInputService.InputEnded:Connect(function(i)
         Aim.Holding = false
     end
 end)
+
+-- Highlight the player the aimbot is currently locked onto, so the
+-- FOV behaviour is visible and not just felt.
+local aimHighlight = Instance.new("Highlight")
+aimHighlight.Name = "MT_AimTarget"
+aimHighlight.FillColor = T.Danger
+aimHighlight.OutlineColor = T.Danger
+aimHighlight.FillTransparency = 0.75
+aimHighlight.OutlineTransparency = 0.15
+aimHighlight.DepthMode = Enum.HighlightDepthMode.Occluded
+aimHighlight.Parent = espGui
 
 local lastHighlighted = nil
 local highlightEnabled = false
