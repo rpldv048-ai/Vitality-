@@ -38,7 +38,7 @@ local notificationsEnabled = true
 -- ===================================================================
 -- The menu is described by an HTML file on GitHub. The loader line:
 --
---   getgenv().VitalityHTML = game:HttpGet(".../yourfile.html")
+--   getgenv().VitalityHTML = game:HttpGet(".../VitalityHTML.html")
 --   loadstring(game:HttpGet(".../robloxscript.lua"))()
 --
 -- stashes the fetched HTML in getgenv().VitalityHTML *before* this script
@@ -48,7 +48,7 @@ local notificationsEnabled = true
 -- mirrors the browser preview's own data (script.html), keeping the two in
 -- sync from a single source of truth.
 
-local CONFIG_URL = "https://raw.githubusercontent.com/rpldv048-ai/Vitality-/refs/heads/main/yourfile.html"
+local CONFIG_URL = "https://raw.githubusercontent.com/rpldv048-ai/Vitality-/refs/heads/main/VitalityHTML.html"
 local HttpService = game:GetService("HttpService")
 
 local htmlConfig = nil        -- decoded config table, or nil
@@ -2688,6 +2688,17 @@ terminateBtn.MouseLeave:Connect(function()
     tween(terminateIcon, 0.2, {TextColor3 = T.Sub})
 end)
 
+-- Highlight the player the aimbot is currently locked onto, so the
+-- FOV behaviour is visible and not just felt.
+local aimHighlight = Instance.new("Highlight")
+aimHighlight.Name = "MT_AimTarget"
+aimHighlight.FillColor = T.Danger
+aimHighlight.OutlineColor = T.Danger
+aimHighlight.FillTransparency = 0.75
+aimHighlight.OutlineTransparency = 0.15
+aimHighlight.DepthMode = Enum.HighlightDepthMode.Occluded
+aimHighlight.Parent = espGui
+
 -- Full teardown: kills every loop and both GUIs
 local function terminate()
     if terminate._done then return end
@@ -2865,17 +2876,6 @@ UserInputService.InputEnded:Connect(function(i)
         Aim.Holding = false
     end
 end)
-
--- Highlight the player the aimbot is currently locked onto, so the
--- FOV behaviour is visible and not just felt.
-local aimHighlight = Instance.new("Highlight")
-aimHighlight.Name = "MT_AimTarget"
-aimHighlight.FillColor = T.Danger
-aimHighlight.OutlineColor = T.Danger
-aimHighlight.FillTransparency = 0.75
-aimHighlight.OutlineTransparency = 0.15
-aimHighlight.DepthMode = Enum.HighlightDepthMode.Occluded
-aimHighlight.Parent = espGui
 
 local lastHighlighted = nil
 local highlightEnabled = false
