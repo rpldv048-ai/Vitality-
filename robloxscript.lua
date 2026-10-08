@@ -33,6 +33,76 @@ local anim = { Enabled = true }
 local activeTweens = {}
 local notificationsEnabled = true
 
+-- ===================================================================
+-- HTML config bridge
+-- ===================================================================
+-- The menu is described by an HTML file on GitHub. The loader line:
+--
+--   getgenv().VitalityHTML = game:HttpGet(".../yourfile.html")
+--   loadstring(game:HttpGet(".../robloxscript.lua"))()
+--
+-- stashes the fetched HTML in getgenv().VitalityHTML *before* this script
+-- runs, so we read it from there first and only fall back to fetching the
+-- URL ourselves when it is missing. The page is parsed for its
+-- <script id="vitality-config" type="application/json"> block, which
+-- mirrors the browser preview's own data (script.html), keeping the two in
+-- sync from a single source of truth.
+
+local CONFIG_URL = "https://raw.githubusercontent.com/rpldv048-ai/Vitality-/refs/heads/main/yourfile.html"
+local HttpService = game:GetService("HttpService")
+
+local htmlConfig = nil        -- decoded config table, or nil
+local htmlConfigSource = ""   -- where the HTML came from, for notifications
+
+local function fetchHtml()
+    -- 1) Prefer whatever the loader already stored for us.
+    local injected
+    local ok = pcall(function()
+        if type(getgenv) == "function" then
+            injected = getgenv().VitalityHTML
+        end
+    end)
+    if ok and type(injected) == "string" and #injected > 0 then
+        htmlConfigSource = "loader"
+        return injected
+    end
+
+    -- 2) Otherwise fetch it ourselves.
+    local fetched
+    ok = pcall(function()
+        fetched = game:HttpGet(CONFIG_URL)
+    end)
+    if ok and type(fetched) == "string" and #fetched > 0 then
+        htmlConfigSource = "HttpGet"
+        return fetched
+    end
+
+    htmlConfigSource = ""
+    return nil
+end
+
+local function parseHtmlConfig(html)
+    if type(html) ~= "string" or #html == 0 then return nil end
+
+    -- Robust to attribute order: find the opening tag, then take everything
+    -- up to the next </script> as the JSON payload.
+    local json = html:match("<script[^>]-id%s*=%s*[\"']vitality%-config[\"'][^>]*>(.-)</script>")
+    if not json then
+        -- Fallback: some hosts minify to a bare "vitality-config" marker.
+        json = html:match("vitality%-config[^>]*>(.-)</script>")
+    end
+    if not json then return nil end
+
+    local ok, decoded = pcall(function()
+        return HttpService:JSONDecode(json)
+    end)
+    if not ok or type(decoded) ~= "table" then
+        warn("Vitality config: could not decode the JSON block.")
+        return nil
+    end
+    return decoded
+end
+
 local function tween(o, t, p)
     if not anim.Enabled then
         for property, value in pairs(p) do
@@ -2417,6 +2487,176 @@ bindHint.Size = UDim2.new(1, 0, 0, 28)
 section(config, "Slots")
 selectGrid(config, {"Slot 1", "Slot 2", "Slot 3", "Slot 4"}, "Slot 1", function(v) print("Config:", v) end, 4)
 
+-- ===================================================================
+-- Dynamic menu, built from the HTML config
+-- ===================================================================
+-- Every control in the fetched HTML becomes a real Roblox component here.
+-- Handlers are looked up by the control label so the HTML-driven controls
+-- behave exactly like the hand-written ones above (aimbot, ESP, noclip...).
+
+-- Per-label behaviour for the config page. Each entry gets (value, context)
+-- and applies the same state change as the matching hard-coded control.
+local htmlHandlers = {
+    ["Enable ESP"] = function(v)
+        Esp.Enabled = v
+        refreshEsp()
+        notify("ESP", v and "Player visuals enabled." or "Player visuals disabled.")
+    end,
+    ["Show Names"] = function(v)
+        Esp.Names = v
+        refreshEsp()
+    end,
+    ["Tracers"] = function(v)
+        Esp.Tracers = v
+        refreshEsp()
+    end,
+    ["Health Bar"] = function(v)
+        Esp.Health = v
+        refreshEsp()
+    end,
+    ["Unlimited Distance"] = function(v)
+        Esp.UnlimitedDistance = v
+    end,
+    ["Max Distance"] = function(v)
+        Esp.MaxDist = v
+    end,
+    ["ESP Style"] = function(v)
+        Esp.Style = v
+        refreshEsp()
+    end,
+    ["Enable Aimbot"] = function(v)
+        Aim.Enabled = v
+        if not v then
+            Aim.Locked, Aim.Holding, Aim.Toggled = nil, false, false
+        end
+        notify("Aimbot", v and "Aimbot enabled." or "Aimbot disabled.")
+    end,
+    ["Target"] = function(v) Aim.Target = v end,
+    ["Activation mode"] = function(v) Aim.Mode = v end,
+    ["Strength (1 = assist, 100 = snap)"] = function(v) Aim.Strength = v end,
+    ["FOV"] = function(v) Aim.FOV = v end,
+    ["Notifications"] = function(v)
+        notificationsEnabled = v
+        if v then notify("Notifications", "Notifications enabled.") end
+    end,
+    ["FPS Counter"] = function(v)
+        fpsCard.Visible = v
+        notify("FPS counter", v and "Counter enabled." or "Counter disabled.")
+    end,
+    ["Clock"] = function(v)
+        clockCard.Visible = v
+        notify("Clock", v and "Clock enabled." or "Clock disabled.")
+    end,
+    ["Center Crosshair"] = function(v)
+        crosshair.Visible = v
+        notify("Crosshair", v and "Crosshair enabled." or "Crosshair disabled.")
+    end,
+    ["Target Indicator"] = function(v)
+        targetCard.Visible = v
+        notify("Target indicator", v and "Target readout enabled." or "Target readout disabled.")
+    end,
+    ["Coordinates"] = function(v)
+        coordinateCard.Visible = v
+        notify("Coordinates", v and "Position readout enabled." or "Position readout disabled.")
+    end,
+    ["Optimize Game"] = function(v) setOptimizeGame(v) end,
+    ["Freecam"] = function(v) setFreecamToggle(v) end,
+    ["Freecam Speed"] = function(v) freecamSpeed = v end,
+    ["Godmode"] = function(v) setGodmodeToggle(v) end,
+    ["UI Scale (%)"] = function(v) uiScale.Scale = v / 100 end,
+    ["Animations"] = function(v)
+        anim.Enabled = v
+        if not v then
+            stopActiveTweens()
+            shootingStar.Visible = false
+        end
+    end,
+    ["Menu Blur / Vignette"] = function(v) vignette.Visible = v end,
+    ["Movement Speed"] = function(v)
+        movementSpeed = v
+        local character = player.Character
+        if character then applyMovementSpeed(character) end
+    end,
+    ["Noclip"] = function(v) setNoclip(v) end,
+}
+
+local function runHtmlHandler(label, value)
+    local handler = htmlHandlers[label]
+    if handler then
+        local ok, err = pcall(handler, value)
+        if not ok then
+            warn("Vitality config: handler for '" .. tostring(label) .. "' failed: " .. tostring(err))
+        end
+    end
+end
+
+-- Builds one tab's worth of sections/controls onto a fresh tab.
+local function buildTabFromConfig(tabDef)
+    local tabName = tabDef.label or tabDef.id or "HTML"
+    local icon = tabDef.icon or "#"
+    local tab = createTab("HTML_" .. tostring(tabDef.id or tabName), icon, tabName)
+
+    for _, sectionDef in ipairs(tabDef.sections or {}) do
+        section(tab, sectionDef.title or "")
+        for _, control in ipairs(sectionDef.controls or {}) do
+            local ctype = control.type
+            local clabel = tostring(control.label or "")
+            if ctype == "toggle" then
+                local setter = toggle(tab, clabel, control.value == true, function(v)
+                    runHtmlHandler(clabel, v)
+                end)
+                -- Keep the visual in sync without re-firing the callback.
+                if control.value == true and setter then setter(true) end
+            elseif ctype == "slider" then
+                slider(
+                    tab,
+                    clabel,
+                    tonumber(control.min) or 0,
+                    tonumber(control.max) or 100,
+                    tonumber(control.value) or tonumber(control.min) or 0,
+                    function(v) runHtmlHandler(clabel, v) end
+                )
+            elseif ctype == "choice" then
+                local options = control.options or {}
+                selectGrid(tab, options, control.value, function(v)
+                    runHtmlHandler(clabel, v)
+                end, math.min(#options, 4))
+            elseif ctype == "key" then
+                -- Rendered as an info row; live rebinding stays in Keybinds.
+                local info = label(tab.Page, clabel .. "  ·  " .. tostring(control.value or ""), 13, Enum.Font.GothamMedium, T.Sub)
+                info.Size = UDim2.new(1, 0, 0, 24)
+                table.insert(tab.Items, {Frame = info, Name = clabel})
+            end
+        end
+    end
+    return tab
+end
+
+local function applyConfig(decoded)
+    if type(decoded) ~= "table" or type(decoded.tabs) ~= "table" then return false end
+    local built = 0
+    for _, tabDef in ipairs(decoded.tabs) do
+        local ok, err = pcall(buildTabFromConfig, tabDef)
+        if ok then
+            built += 1
+        else
+            warn("Vitality config: tab '" .. tostring(tabDef.label or tabDef.id) .. "' failed: " .. tostring(err))
+        end
+    end
+    return built > 0
+end
+
+-- Load once at startup so the HTML-driven tab exists immediately.
+local function loadHtmlConfig()
+    local html = fetchHtml()
+    local decoded = parseHtmlConfig(html)
+    if decoded then
+        htmlConfig = decoded
+        return applyConfig(decoded)
+    end
+    return false
+end
+
 -- Bottom sidebar buttons ---------------------------------------------
 local bottom = Instance.new("Frame")
 bottom.AnchorPoint = Vector2.new(0, 1)
@@ -2490,6 +2730,29 @@ Aim.Enabled = false
 -- all run from load without the user having to flip a toggle.
 anim.Enabled = true
 vignette.Visible = true
+
+-- Pull the HTML page and build its tabs. Done before the first tab is
+-- selected so the config-driven pages are part of the finished menu.
+local htmlOk = loadHtmlConfig()
+if htmlOk then
+    notify("Config loaded", "Menu built from HTML (" .. htmlConfigSource .. ").")
+else
+    notify("Config missing", "Could not load the HTML config; using built-in tabs.")
+end
+
+-- Expose a manual rebuild so the menu can be refreshed without reloading
+-- the whole script: getgenv().VitalityReload()
+pcall(function()
+    if type(getgenv) == "function" then
+        getgenv().VitalityReload = function()
+            htmlConfig = nil
+            local ok = loadHtmlConfig()
+            notify("Config reload", ok and "Menu rebuilt from HTML." or "Reload failed; check the URL.")
+            return ok
+        end
+    end
+end)
+
 tabs["Main"].Select()
 notify("Menu ready", "Galaxy theme active. Open Keybinds to customize controls.")
 
